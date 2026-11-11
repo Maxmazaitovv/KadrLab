@@ -1,3 +1,4 @@
+
 name: KadrLab Android APK Build
 
 on:
@@ -20,7 +21,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Set up Java 17
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v5
         with:
           distribution: temurin
           java-version: "17"
@@ -29,6 +30,19 @@ jobs:
         uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: "8.11.1"
+
+      - name: Extract Android project ZIP
+        run: |
+          unzip -q KadrLab-Stage2-Without-Build-YML.zip -d extracted
+
+          PROJECT_DIR=$(find extracted -name settings.gradle.kts -printf '%h\n' | head -n 1)
+
+          if [ -z "$PROJECT_DIR" ]; then
+            echo "ERROR: settings.gradle.kts not found in ZIP"
+            exit 1
+          fi
+
+          cp -a "$PROJECT_DIR"/. .
 
       - name: Build APK
         run: gradle :app:assembleDebug --stacktrace
